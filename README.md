@@ -1,1 +1,3 @@
-# Frontend template
+# WebGL Sandbox
+
+2D Rendering with WebGL
