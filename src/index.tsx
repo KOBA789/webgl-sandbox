@@ -122,7 +122,7 @@ function polyLine(
   let vtxCurrentIdx = 0;
   const tempNormals = new Float32Array(points.length * 2);
   const tempPoints = new Float32Array(
-    points.length * (isThickLine ? 2 : 4) * 2
+    points.length * (!isThickLine ? 2 : 4) * 2
   );
   for (let i1 = 0; i1 < count; i1++) {
     const i2 = i1 + 1 == points.length ? 0 : i1 + 1;
@@ -222,6 +222,135 @@ function polyLine(
       vtxData[vtxWritePtr + 5] = colorTrans[3];
       vtxWritePtr += 6;
     }
+  } else {
+    const halfInnerThickness = (thickness - AA_SIZE) * 0.5;
+
+    if (!closed) {
+      const pointsLast = points.length - 1;
+      tempPoints[0] =
+        points[0][0] + tempNormals[0] * (halfInnerThickness + AA_SIZE);
+      tempPoints[1] =
+        points[0][1] + tempNormals[1] * (halfInnerThickness + AA_SIZE);
+      tempPoints[2] = points[0][0] + tempNormals[0] * halfInnerThickness;
+      tempPoints[3] = points[0][1] + tempNormals[1] * halfInnerThickness;
+      tempPoints[4] = points[0][0] - tempNormals[0] * halfInnerThickness;
+      tempPoints[5] = points[0][1] - tempNormals[1] * halfInnerThickness;
+      tempPoints[6] =
+        points[0][0] - tempNormals[0] * (halfInnerThickness + AA_SIZE);
+      tempPoints[7] =
+        points[0][1] - tempNormals[1] * (halfInnerThickness + AA_SIZE);
+
+      tempPoints[pointsLast * 4 * 2 + 0] =
+        points[pointsLast][0] +
+        tempNormals[pointsLast * 2 + 0] * (halfInnerThickness + AA_SIZE);
+      tempPoints[pointsLast * 4 * 2 + 1] =
+        points[pointsLast][1] +
+        tempNormals[pointsLast * 2 + 1] * (halfInnerThickness + AA_SIZE);
+      tempPoints[pointsLast * 4 * 2 + 2] =
+        points[pointsLast][0] +
+        tempNormals[pointsLast * 2 + 0] * halfInnerThickness;
+      tempPoints[pointsLast * 4 * 2 + 3] =
+        points[pointsLast][1] +
+        tempNormals[pointsLast * 2 + 1] * halfInnerThickness;
+      tempPoints[pointsLast * 4 * 2 + 4] =
+        points[pointsLast][0] -
+        tempNormals[pointsLast * 2 + 0] * halfInnerThickness;
+      tempPoints[pointsLast * 4 * 2 + 5] =
+        points[pointsLast][1] -
+        tempNormals[pointsLast * 2 + 1] * halfInnerThickness;
+      tempPoints[pointsLast * 4 * 2 + 6] =
+        points[pointsLast][0] -
+        tempNormals[pointsLast * 2 + 0] * (halfInnerThickness + AA_SIZE);
+      tempPoints[pointsLast * 4 * 2 + 7] =
+        points[pointsLast][1] -
+        tempNormals[pointsLast * 2 + 1] * (halfInnerThickness + AA_SIZE);
+    }
+
+    let idx1 = vtxCurrentIdx;
+    for (let i1 = 0; i1 < count; i1++) {
+      const i2 = i1 + 1 === points.length ? 0 : i1 + 1;
+      const idx2 = i1 + 1 === points.length ? vtxCurrentIdx : idx1 + 4;
+
+      const dm = [
+        (tempNormals[i1 * 2 + 0] + tempNormals[i2 * 2 + 0]) * 0.5,
+        (tempNormals[i1 * 2 + 1] + tempNormals[i2 * 2 + 1]) * 0.5,
+      ] as [number, number];
+      fixNormal2f(dm);
+      const dmOutX = dm[0] * (halfInnerThickness + AA_SIZE);
+      const dmOutY = dm[1] * (halfInnerThickness + AA_SIZE);
+      const dmInX = dm[0] * halfInnerThickness;
+      const dmInY = dm[1] * halfInnerThickness;
+
+      tempPoints[(i2 * 4 + 0) * 2 + 0] = points[i2][0] + dmOutX;
+      tempPoints[(i2 * 4 + 0) * 2 + 1] = points[i2][1] + dmOutY;
+      tempPoints[(i2 * 4 + 1) * 2 + 0] = points[i2][0] + dmInX;
+      tempPoints[(i2 * 4 + 1) * 2 + 1] = points[i2][1] + dmInY;
+      tempPoints[(i2 * 4 + 2) * 2 + 0] = points[i2][0] - dmInX;
+      tempPoints[(i2 * 4 + 2) * 2 + 1] = points[i2][1] - dmInY;
+      tempPoints[(i2 * 4 + 3) * 2 + 0] = points[i2][0] - dmOutX;
+      tempPoints[(i2 * 4 + 3) * 2 + 1] = points[i2][1] - dmOutY;
+
+      idxData[idxWritePtr + 0] = idx2 + 1;
+      idxData[idxWritePtr + 1] = idx1 + 1;
+      idxData[idxWritePtr + 2] = idx1 + 2;
+
+      idxData[idxWritePtr + 3] = idx1 + 2;
+      idxData[idxWritePtr + 4] = idx2 + 2;
+      idxData[idxWritePtr + 5] = idx2 + 1;
+
+      idxData[idxWritePtr + 6] = idx2 + 1;
+      idxData[idxWritePtr + 7] = idx1 + 1;
+      idxData[idxWritePtr + 8] = idx1 + 0;
+
+      idxData[idxWritePtr + 9] = idx1 + 0;
+      idxData[idxWritePtr + 10] = idx2 + 0;
+      idxData[idxWritePtr + 11] = idx2 + 1;
+
+      idxData[idxWritePtr + 12] = idx2 + 2;
+      idxData[idxWritePtr + 13] = idx1 + 2;
+      idxData[idxWritePtr + 14] = idx1 + 3;
+
+      idxData[idxWritePtr + 15] = idx1 + 3;
+      idxData[idxWritePtr + 16] = idx2 + 3;
+      idxData[idxWritePtr + 17] = idx2 + 2;
+      idxWritePtr += 18;
+
+      idx1 = idx2;
+    }
+
+    for (let i = 0; i < points.length; i++) {
+      vtxData[vtxWritePtr + 0] = tempPoints[(i * 4 + 0) * 2 + 0];
+      vtxData[vtxWritePtr + 1] = tempPoints[(i * 4 + 0) * 2 + 1];
+      vtxData[vtxWritePtr + 2] = colorTrans[0];
+      vtxData[vtxWritePtr + 3] = colorTrans[1];
+      vtxData[vtxWritePtr + 4] = colorTrans[2];
+      vtxData[vtxWritePtr + 5] = colorTrans[3];
+      vtxWritePtr += 6;
+
+      vtxData[vtxWritePtr + 0] = tempPoints[(i * 4 + 1) * 2 + 0];
+      vtxData[vtxWritePtr + 1] = tempPoints[(i * 4 + 1) * 2 + 1];
+      vtxData[vtxWritePtr + 2] = color[0];
+      vtxData[vtxWritePtr + 3] = color[1];
+      vtxData[vtxWritePtr + 4] = color[2];
+      vtxData[vtxWritePtr + 5] = color[3];
+      vtxWritePtr += 6;
+
+      vtxData[vtxWritePtr + 0] = tempPoints[(i * 4 + 2) * 2 + 0];
+      vtxData[vtxWritePtr + 1] = tempPoints[(i * 4 + 2) * 2 + 1];
+      vtxData[vtxWritePtr + 2] = color[0];
+      vtxData[vtxWritePtr + 3] = color[1];
+      vtxData[vtxWritePtr + 4] = color[2];
+      vtxData[vtxWritePtr + 5] = color[3];
+      vtxWritePtr += 6;
+
+      vtxData[vtxWritePtr + 0] = tempPoints[(i * 4 + 3) * 2 + 0];
+      vtxData[vtxWritePtr + 1] = tempPoints[(i * 4 + 3) * 2 + 1];
+      vtxData[vtxWritePtr + 2] = colorTrans[0];
+      vtxData[vtxWritePtr + 3] = colorTrans[1];
+      vtxData[vtxWritePtr + 4] = colorTrans[2];
+      vtxData[vtxWritePtr + 5] = colorTrans[3];
+      vtxWritePtr += 6;
+    }
   }
   return [vtxData, idxData];
 }
@@ -236,7 +365,7 @@ for (let a = 0; a < 360; a += 5) {
   ]);
 }
 
-const [vtxData, idxData] = polyLine(points, [1.0, 1.0, 1.0, 1.0], true, 1);
+const [vtxData, idxData] = polyLine(points, [1.0, 1.0, 1.0, 1.0], true, 30);
 
 console.log(points);
 console.log(vtxData);
