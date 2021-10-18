@@ -997,10 +997,10 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.5.tgz#dcce4430e64b443ba8945f0290fb564ad5bac6dd"
   integrity sha512-7+2BITlgjgDhH0vvwZU/HZJVyk+2XUlvxXe8dFMedNX/aMkaOq++rMAFXc0tM7ij15QaWlbdQASBR9dihi+bDQ==
 
-"@types/parcel-env@0.0.0":
-  version "0.0.0"
-  resolved "https://registry.yarnpkg.com/@types/parcel-env/-/parcel-env-0.0.0.tgz#c8ed2c06cd70c9cb89d50bbb1688404fc2a93f33"
-  integrity sha512-GcmAgBcg/SG5Hy3MVvcTRXf4PUIxQoNUMCjTvG6DSWAfoFwd1FKG0HxVZqHgRE4JuusR6DTrNetKi2WliIiY/g==
+"@types/parcel-env@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@types/parcel-env/-/parcel-env-0.0.1.tgz#dbf0aa6c00bd52c7b85f65cb6027e4ebab6c4ac1"
+  integrity sha512-8WmdiJ1uEBcW6AOWzQH7i0141ZXZr7B03YfTpguUDrTHXJHwYU9eEOckBRCZzYGrzb4pdoyBlaIMiTee04uqPQ==
 
 "@types/q@^1.5.1":
   version "1.5.4"
